@@ -5,46 +5,35 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    body { max-width: 800px; margin: 0 auto; padding: 20px; }
-    #map { height: 500px; width: 100%; border: 1px solid #ccc; }
-    .info { margin-top: 10px; color: #666; }
+    #map { height: 500px; width: 100%; }
   </style>
 </head>
 <body>
   <h1>nRF9160 实时定位</h1>
   <div id="map"></div>
-  <div class="info">
-    经纬度：<span id="latlon">--</span><br>
-    最后更新：<span id="time">--</span>
-  </div>
+  <p>经纬度：<span id="latlon">--</span> | 最后更新：<span id="time">--</span></p>
 
   <script>
-    // 初始化地图
-    const map = L.map('map').setView([39.9042, 116.4074], 13); // 初始位置设为北京
+    const map = L.map('map').setView([39.9042, 116.4074], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     let marker;
 
-    // 定时更新定位
     function updateLocation() {
       fetch('/get-location')
         .then(r => r.json())
         .then(data => {
           if (data.lat && data.lon) {
-            // 更新标记
             if (marker) map.removeLayer(marker);
             marker = L.marker([data.lat, data.lon]).addTo(map);
-            marker.bindPopup(`位置：${data.lat}, ${data.lon}`).openPopup();
             map.setView([data.lat, data.lon], 15);
-            // 更新文字信息
             document.getElementById('latlon').textContent = `${data.lat}, ${data.lon}`;
             document.getElementById('time').textContent = new Date(data.time).toLocaleString();
           }
         });
     }
 
-    // 每3秒刷新一次
     setInterval(updateLocation, 3000);
-    updateLocation(); // 立即执行一次
+    updateLocation();
   </script>
 </body>
 </html>
